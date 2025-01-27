@@ -1,0 +1,33 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:latest
+    container_name: postgres_container
+    environment:
+      POSTGRES_USER: admin           # Пользователь базы данных
+      POSTGRES_PASSWORD: password    # Пароль для пользователя
+      POSTGRES_DB: shareU         # Имя базы данных
+    ports:
+      - "5432:5432"                  # Маппинг порта для доступа к PostgreSQL
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data  # Хранение данных для сохранения между запусками
+    networks:
+      - pg_network
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin_container
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com # Логин для входа в pgAdmin
+      PGADMIN_DEFAULT_PASSWORD: admin          # Пароль для входа в pgAdmin
+    ports:
+      - "9090:80"                   # Маппинг порта для доступа к pgAdmin
+    networks:
+      - pg_network
+
+volumes:
+  postgres_data:                    # Определение тома для хранения данных PostgreSQL
+
+networks:
+  pg_network:                       # Определение сети для взаимодействия сервисов
