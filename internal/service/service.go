@@ -7,18 +7,19 @@ import (
 )
 
 type TaskCreateInput struct {
-	project  string
-	command  string
-	priority int
+	Project  int
+	Tag      string
+	Command  string
+	Priority int
 }
 
 type TaskAllocateInput struct {
-	agentIP int
+	AgentIP int
 }
 
 type TaskAllocateOutput struct {
-	command    string
-	dockerLink string
+	Command    string
+	DockerLink string
 }
 
 type TaskSubmitInput struct {
@@ -32,14 +33,15 @@ type Task interface {
 	Create(ctx context.Context, input TaskCreateInput) error
 }
 
-type ProjectCreateInput struct {
-	project  string
-	command  string
-	priority int
+type ProjectGetOutput struct {
+	Id   int
+	Name string
 }
 
 type Project interface {
-	Create(ctx context.Context, input ProjectCreateInput) error
+	Create(ctx context.Context, name string) error
+	Delete(ctx context.Context, id int) error
+	Get(ctx context.Context) ([]ProjectGetOutput, error)
 }
 
 type Services struct {

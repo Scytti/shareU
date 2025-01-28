@@ -6,14 +6,14 @@ CREATE TABLE status (
 );
 
 INSERT INTO status(name)
-    VALUES (to_do),
-           (doing),
-           (done),
-           (error),
-           (expired);
+    VALUES ('to_do'),
+           ('doing'),
+           ('done'),
+           ('error'),
+           ('expired');
 -- +goose StatementEnd
 
 -- +goose Down
 -- +goose StatementBegin
-DROP TABLE(status)
+DROP TABLE (status)
 -- +goose StatementEnd

@@ -2,6 +2,7 @@ package repo
 
 import (
 	"context"
+	"log/slog"
 	"shareU/internal/entity"
 	"shareU/internal/repo/pgdb"
 	"shareU/pkg/postgres"
@@ -10,7 +11,8 @@ import (
 type Project interface {
 	CreateProject(ctx context.Context, name string) (int, error)
 	DeleteProjectById(ctx context.Context, id int) error
-	GetProjectById(ctx context.Context, id int) (entity.Project, error)
+	//GetProjectById(ctx context.Context, id int) (entity.Project, error)
+	GetProject(ctx context.Context) ([]entity.Project, error)
 }
 
 type Task interface {
@@ -27,9 +29,9 @@ type Repositories struct {
 	Project Project
 }
 
-func NewRepositories(pg *postgres.Postgres) *Repositories {
+func NewRepositories(pg *postgres.Postgres, log *slog.Logger) *Repositories {
 	return &Repositories{
 		Task:    pgdb.NewTaskRepo(pg),
-		Project: pgdb.NewProjectRepo(pg),
+		Project: pgdb.NewProjectRepo(pg, log),
 	}
 }

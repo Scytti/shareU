@@ -1,9 +1,15 @@
 package main
 
 import (
+	"github.com/labstack/echo/v4"
 	"log/slog"
+	"net/http"
 	"os"
 	"shareU/internal/config"
+	v1 "shareU/internal/controller/http/v1"
+	"shareU/internal/repo"
+	"shareU/internal/service"
+	"shareU/pkg/postgres"
 )
 
 const (
@@ -13,22 +19,47 @@ const (
 )
 
 func main() {
-	// TODO: инициализировать объект конфига
+	// Configuration
 	cfg := config.MustLoad()
 
-	print(cfg)
-	// TODO: инициализировать логгер
-
+	// Logger
 	log := setupLogger(cfg.Env)
-	print(log)
 
-	log = log.With(slog.String("env", cfg.Env)) // к каждому сообщению будет добавляться поле с информацией о текущем окружении
+	// Repositories
+	log.Info("Initializing postgres...")
+	pg, err := postgres.New(cfg.DBConfig.ConnectionURL(), postgres.MaxPoolSize(1))
+	if err != nil {
+		log.Error("app - Run - pgdb.NewServices: %w", err)
+	}
+	defer pg.Close()
 
-	log.Info("initializing server", slog.String("address", cfg.Address)) // Помимо сообщения выведем параметр с адресом
-	log.Debug("logger debug mode enabled")
-	// TODO: инициализировать приложение (app)
+	// Repositories
+	log.Info("Initializing repositories...")
+	repositories := repo.NewRepositories(pg, log)
 
-	// TODO: запустить gRPC-сервер приложения
+	log.Info("Initializing services...")
+	deps := service.ServicesDependencies{
+		Repos: repositories,
+	}
+	services := service.NewServices(deps)
+
+	// Echo handler
+	log.Info("Initializing handlers and routes...")
+	handler := echo.New()
+	// setup handler validator as lib validator
+	//handler.Validator = validator.NewCustomValidator()
+	v1.NewRouter(handler, services)
+
+	// HTTP server
+	log.Info("Starting http server...")
+	log.Debug("Server port: %s", cfg.Address)
+	s := http.Server{
+		Addr:    cfg.Address,
+		Handler: handler,
+	}
+	if err := s.ListenAndServe(); err != http.ErrServerClosed {
+		log.Error("error")
+	}
 }
 
 func setupLogger(env string) *slog.Logger {
