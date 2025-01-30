@@ -2,6 +2,7 @@ package pgdb
 
 import (
 	"context"
+	"github.com/labstack/gommon/log"
 	"shareU/internal/entity"
 	"shareU/pkg/postgres"
 )
@@ -21,8 +22,8 @@ func (t TaskRepo) ChangeTaskStatus(ctx context.Context, id int, status int) erro
 }
 
 func (t TaskRepo) CreateTask(ctx context.Context, task entity.Task) error {
-	// Implement the logic to insert a task into the database
-	_, err := t.Pool.Exec(ctx, "INSERT INTO task (project_id, tag, command, priority) VALUES ($1, $2, $3, $4)", task.ProjectID, task.Tag, task.Command, task.Priority)
+	log.Info("пытаемся сделать инсрет запрос")
+	_, err := t.Pool.Exec(ctx, "INSERT INTO task (project_id, tag, command,	condition, after, result, priority) VALUES ($1, $2, $3, $4, $5, $6, $7)", task.ProjectID, task.Tag, task.Command, task.Condition, task.After, task.Result, task.Priority)
 	return err
 }
 
@@ -64,14 +65,14 @@ func (t TaskRepo) GetAllTasks(ctx context.Context) ([]entity.Task, error) {
 
 func (t TaskRepo) GetPriorityTask(ctx context.Context) (entity.Task, error) {
 	query := `
-		SELECT id, project_id, tag, command, priority, status
+		SELECT id, command, condition, after
 		FROM task
-		WHERE status = 0
+		WHERE status = 1
 		ORDER BY priority DESC
 		LIMIT 1
 	`
 	var task entity.Task
-	err := t.Pool.QueryRow(ctx, query).Scan(&task.ID, &task.ProjectID, &task.Tag, &task.Command, &task.Priority, &task.Status)
+	err := t.Pool.QueryRow(ctx, query).Scan(&task.ID, &task.Command, &task.Condition, &task.After)
 	if err != nil {
 		return entity.Task{}, err
 	}
@@ -90,6 +91,12 @@ func (t TaskRepo) GetTaskById(ctx context.Context, id int) (entity.Task, error) 
 		return entity.Task{}, err
 	}
 	return task, nil
+}
+
+func (t TaskRepo) AddToLogTask(ctx context.Context, task_id int, ip string, status int, result string) error {
+	_, err := t.Pool.Exec(ctx, "INSERT INTO task_logs (task_id, ip, status,	result) VALUES ($1, $2, $3, $4)",
+		task_id, ip, status, result)
+	return err
 }
 
 func NewTaskRepo(pg *postgres.Postgres) *TaskRepo {

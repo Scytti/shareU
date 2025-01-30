@@ -22,6 +22,7 @@ type Task interface {
 	GetAllTasks(ctx context.Context) ([]entity.Task, error)
 	GetPriorityTask(ctx context.Context) (entity.Task, error)
 	GetTaskById(ctx context.Context, id int) (entity.Task, error)
+	AddToLogTask(ctx context.Context, task_id int, ip string, status int, result string) error
 }
 
 type Repositories struct {

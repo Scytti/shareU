@@ -2,34 +2,41 @@ package service
 
 import (
 	"context"
-	"mime/multipart"
 	"shareU/internal/repo"
 )
 
 type TaskCreateInput struct {
-	Project  int
-	Tag      string
-	Command  string
-	Priority int
+	Project   int
+	Tag       string
+	Command   string
+	Condition string
+	After     string
+	Result    string
+	Priority  int
 }
 
 type TaskAllocateInput struct {
-	AgentIP int
+	AgentIP string
 }
 
 type TaskAllocateOutput struct {
-	Command    string
-	DockerLink string
+	TaskId    int
+	Command   string
+	Condition string
+	After     string
+	//DockerLink string
 }
 
 type TaskSubmitInput struct {
-	agentIP     int
-	terminalLog multipart.File
+	TaskId      int
+	AgentIP     string
+	TerminalLog string
+	//terminalLog multipart.File
 }
 
 type Task interface {
 	Allocate(ctx context.Context, input TaskAllocateInput) (TaskAllocateOutput, error)
-	Submit(ctx context.Context, input TaskCreateInput) error
+	Submit(ctx context.Context, input TaskSubmitInput) error
 	Create(ctx context.Context, input TaskCreateInput) error
 }
 

@@ -14,7 +14,7 @@ func NewRouter(handler *echo.Echo, services *service.Services) {
 
 	v1 := handler.Group("/api/v1")
 	{
-		//newTaskRoutes(v1.Group("/tasks") /*, services.Task*/)
+		newTaskRoutes(v1.Group("/tasks"), services.Task)
 		newProjectRoutes(v1.Group("/projects"), services.Project)
 	}
 }
